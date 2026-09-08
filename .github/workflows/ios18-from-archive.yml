@@ -1,0 +1,68 @@
+name: iOS 18 IPA (source archive)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extract compatibility source
+        run: |
+          set -euo pipefail
+          mkdir source
+          unzip -q EhViewer-iOS18-source.zip -d source
+          test -f "source/ehviewer apple.xcodeproj/project.pbxproj"
+          test -f source/.github/scripts/package_ios18.py
+      - name: Test archive validation
+        working-directory: source
+        run: python3 -B .github/scripts/test_package_ios18.py
+      - name: Select Xcode 26.2
+        run: |
+          sudo xcode-select -s /Applications/Xcode_26.2.app/Contents/Developer
+          xcodebuild -version
+      - name: Archive for iOS 18 without signing
+        working-directory: source
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p build
+          xcodebuild archive \
+            -project "ehviewer apple.xcodeproj" \
+            -scheme "ehviewer apple" \
+            -configuration Release \
+            -destination "generic/platform=iOS" \
+            -archivePath build/EhViewer-iOS18.xcarchive \
+            -resultBundlePath build/Archive.xcresult \
+            -onlyUsePackageVersionsFromResolvedFile \
+            IPHONEOS_DEPLOYMENT_TARGET=18.0 \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            DEVELOPMENT_TEAM="" \
+            COMPILER_INDEX_STORE_ENABLE=NO \
+            2>&1 | tee build/archive.log
+      - name: Verify and package unsigned IPA
+        working-directory: source
+        run: python3 .github/scripts/package_ios18.py build/EhViewer-iOS18.xcarchive build/output
+      - name: Upload IPA and compatibility evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: EhViewer-iOS18-unsigned-${{ github.run_number }}
+          path: source/build/output/
+          if-no-files-found: error
+          retention-days: 14
+      - name: Upload build diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: iOS18-build-log-${{ github.run_number }}
+          path: |
+            source/build/archive.log
+            source/build/Archive.xcresult
+          if-no-files-found: ignore
+          retention-days: 7
