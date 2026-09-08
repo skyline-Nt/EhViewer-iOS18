@@ -12,7 +12,13 @@
 
 第一版已有一次 [GitHub Actions 成功构建记录](https://github.com/skyline-Nt/EhViewer-iOS18/actions/runs/34223004001)，对应提交 `732d7c95e1171919f2764c18fe9a0dc36834d05b`。构建成功与维护者的运行反馈不代表全部设备或功能都已完成测试。
 
-## 构建与安装
+## 下载与安装
+
+在 [v1.0.1 发布页](https://github.com/skyline-Nt/EhViewer-iOS18/releases/tag/v1.0.1) 下载 EhViewer-iOS18-unsigned.ipa。该 IPA 来自下面记录的第一版成功构建，未重新修改应用二进制，需要使用自己的账号重新签名后安装。发布页同时提供源码压缩包与构建兼容性报告。
+
+v1.0.1 是本兼容仓库的发布版本；保留的第一版源码及应用内版本号没有改动。
+
+## 自行构建
 
 1. 打开本仓库的 [Actions](https://github.com/skyline-Nt/EhViewer-iOS18/actions/workflows/ios18-from-archive.yml)，选择 **iOS 18 IPA (source archive)**。
 2. 点击 **Run workflow**，选择 `main` 并启动构建。工作流会解压第一版源码，使用 macOS runner 和 Xcode 26.2 构建最低系统版本为 iOS 18.0 的 IPA。
