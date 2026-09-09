@@ -35,7 +35,7 @@ v1.0.1 是本兼容仓库的发布版本；保留的第一版源码及应用内�
 
 ## 源码与协议
 
-第一版源码保存在 [`EhViewer-iOS18-source.zip`](EhViewer-iOS18-source.zip) 中，包含 Xcode 工程、Packages、原有文档及 LICENSE。解压后可检查具体改动和完整源码。
+第一版完整源码可直接在 [`src/`](src/) 中浏览，包含 Xcode 工程、Packages、原有文档及 LICENSE。该目录与 [`EhViewer-iOS18-source.zip`](EhViewer-iOS18-source.zip) 内容一致；现有构建工作流仍使用此源码压缩包。GitHub 右侧 Languages 根据实际源码自动统计。
 
 保留上游 [Apache License 2.0](https://github.com/felixchaos/EhViewer-Apple/blob/main/LICENSE) 及源码中的版权声明；完整许可证也随源码压缩包提供。本仓库是独立兼容移植，不代表上游官方发行。
 

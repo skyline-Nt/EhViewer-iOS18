@@ -1,0 +1,68 @@
+name: iOS 18 IPA (unsigned)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ios18-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test archive validation
+        run: python3 -B .github/scripts/test_package_ios18.py
+      - name: Select Xcode 26.2
+        run: |
+          test -d /Applications/Xcode_26.2.app
+          sudo xcode-select -s /Applications/Xcode_26.2.app/Contents/Developer
+          xcodebuild -version
+          xcodebuild -showsdks
+
+      - name: Archive for iOS 18 without signing
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p build
+          xcodebuild archive \
+            -project "ehviewer apple.xcodeproj" \
+            -scheme "ehviewer apple" \
+            -configuration Release \
+            -destination "generic/platform=iOS" \
+            -archivePath build/EhViewer-iOS18.xcarchive \
+            -resultBundlePath build/Archive.xcresult \
+            -onlyUsePackageVersionsFromResolvedFile \
+            IPHONEOS_DEPLOYMENT_TARGET=18.0 \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            DEVELOPMENT_TEAM="" \
+            COMPILER_INDEX_STORE_ENABLE=NO \
+            2>&1 | tee build/archive.log
+
+      - name: Verify and package unsigned IPA
+        run: python3 .github/scripts/package_ios18.py build/EhViewer-iOS18.xcarchive build/output
+
+      - name: Upload IPA and compatibility evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: EhViewer-iOS18-unsigned-${{ github.run_number }}
+          path: build/output/
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload build diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: iOS18-build-log-${{ github.run_number }}
+          path: |
+            build/archive.log
+            build/Archive.xcresult
+          if-no-files-found: ignore
+          retention-days: 7
